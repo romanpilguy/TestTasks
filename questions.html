@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8" />
+  <title>Опросник</title>
+  <!--[if IE]>
+   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <style>
+   article, aside, details, figcaption, figure, footer,header,
+   hgroup, menu, nav, section { display: block; }
+  </style>
+ </head>
+ <body>
+     <div id = "question-screen">
+         <form  id = "form"></form>
+         <input id= "btn" onclick = "showResults()" disabled type = 'submit'>
+     </div>
+     <div id = "result-screen"></div>
+  <script src = "question.js"></script>
+  <script>
+      
+      const questions = [
+          {
+              id : 'first',
+              text : '2+2',
+              type : 'radio',
+              answers : [1,2,4],
+              valid_answers : [4]
+          },
+          {
+              id : 'second',
+              text : 'Выберите положительные числа',
+              type : 'checkbox',
+              answers : [-1,2,3],
+              valid_answers : [2,3]
+          }
+      ]
+      const form = document.getElementById('form')
+      
+      const isReady = ()=>{
+          let flag = true
+          const data = new FormData(form)
+          const obj = {}
+          data.forEach((val,key)=>{
+            obj[key] = val
+          })
+          questions.forEach((q) => {
+            if(!obj[q.id]){
+                flag = false
+            }
+          })
+          return flag
+      }
+      questions.forEach(question =>{
+         const q = new Question(question)
+         const elem = document.createElement('p')
+         elem.innerHTML = q.toHtml()
+         
+         form.append(elem)
+      })
+
+      const inputs = Array.from(document.getElementsByTagName('input'))
+      const btn = document.getElementById('btn')
+      inputs.forEach(el =>{
+          el.addEventListener('click', ()=>{
+              if(isReady()){
+                  btn.disabled = false
+                  
+              }
+              else btn.disabled = true
+          })
+      })
+      
+      const getValidAnswers = () =>{
+            const data = new FormData(form)
+            const answers = {}
+            data.forEach((value, key)=>{
+                if(!answers[key]){
+                    answers[key] = [value]
+                }
+                else{
+                    answers[key].push(value)
+                }
+                
+            })
+            let valid = 0
+            questions.forEach(q=>{
+                if(q.valid_answers.join('') === answers[q.id].join('') ){
+                    valid ++
+                }
+            })
+            return valid
+      }
+      const showResults= () =>{
+        document.getElementById("question-screen").style.display = "none";
+          const screen = document.getElementById('result-screen')
+          screen.innerHTML = `<h2>Вы ответили правильно на ${getValidAnswers()} вопросов из ${questions.length}</h2>`
+      }
+  </script>
+ </body>
+</html>

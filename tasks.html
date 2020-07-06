@@ -1,0 +1,93 @@
+<html>
+ <head>
+  <meta charset="utf-8" />
+  <title>Список задач</title>
+  <!--[if IE]>
+   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <style>
+   article, aside, details, figcaption, figure, footer,header,
+   hgroup, menu, nav, section { display: block; }
+  </style>
+ </head>
+ <body>
+     <div id = "task-screen">
+         <div id = "task-list"></div>
+         <input type = "submit" value="Создать задачу" onclick = 'renderTaskForm()'>
+    </div>
+     <div id = "task-form" display = 'none'>
+         <input type = "text" id = "name">
+         <input type = "text" id = "text">
+         <input type="radio" name="status" value="Открыта" checked="checked"/>
+        <input type="radio" name="status" value="В работе"/>
+        <input type="radio" name="status" value="Решена"/>
+        <input type = "submit" value="Создать задачу" onclick = "
+            createTaskAction()
+        ">
+     </div>
+     <script>
+         const createTaskAction =() =>{
+             let status 
+             const checks = document.getElementsByName('status')
+             for(let i = 0; i<3;++i){
+                 if((checks[i].checked)){
+                     status = checks[i].value
+                 }
+             }
+            const name = document.getElementById('name').value
+            const text = document.getElementById('text').value
+            const task = {
+                name,status,text, id: Date.now()
+            }
+            putTaskToShelve(task)
+            document.getElementById('task-form').style.display = 'none'
+            renderTaskList()
+         }
+         
+        const taskToHtml = task =>
+        `<h2>${task.name}|${task.status}</h2><p>${task.text}</p><p onclick = 'deleteTask(${task.id})'>Удалить задачу</p>`
+        const putTaskToShelve = (task) =>{
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || []
+            const index = tasks.findIndex(item => item.id === task.id)
+            if(index >=0){
+                tasks[index] = task
+            }
+            else{
+                tasks.push(task)
+            }
+            localStorage.setItem('tasks',JSON.stringify(tasks))
+            
+        }
+        const deleteTask = id =>{
+            
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || []
+            localStorage.setItem('tasks', JSON.stringify(tasks.filter(item => item.id != id)))
+            renderTaskList()
+        }
+        const renderTaskList = (tasks) => {
+            document.getElementById('task-screen').style.display = 'block'
+            if(!tasks) tasks = JSON.parse(localStorage.getItem('tasks')) || []
+            let str = '<h1>Список задач</h1>'
+            tasks.forEach(task =>{
+                str+= taskToHtml(task)
+            })
+            const list = document.getElementById('task-list')
+            list.innerHTML = str
+        }
+        const renderTaskForm = ()=>{
+            document.getElementById('task-screen').style.display = 'none'
+            
+            const form = document.getElementById('task-form')
+            form.style.display = 'block'
+        }
+        window.onload = function(){
+            renderTaskList()
+        }
+  </script>
+  <style>
+      #task-form {
+          display: none;
+      }
+  </style>
+ </body>
+</html>
